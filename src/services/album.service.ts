@@ -1,5 +1,6 @@
 import { Prisma } from '@prisma/client';
 import { AppError } from '../errors/app-error.js';
+import { publishAlbumImportedEvent } from '../messaging/album.publisher.js';
 import { AlbumRepository } from '../repositories/album.repository.js';
 import { SpotifyService } from './spotify.service.js';
 
@@ -51,8 +52,19 @@ export class AlbumService {
         spotifyAlbum,
         requestedBy,
       );
+      const formattedAlbum = this.formatAlbumDetails(importedAlbum);
 
-      return this.formatAlbumDetails(importedAlbum);
+      await publishAlbumImportedEvent({
+        event: 'ALBUM_IMPORTED',
+        albumId: formattedAlbum.id,
+        spotifyId: formattedAlbum.spotifyId,
+        name: formattedAlbum.name,
+        artistName: formattedAlbum.artists[0]?.name,
+        status: formattedAlbum.status,
+        occurredAt: new Date().toISOString(),
+      });
+
+      return formattedAlbum;
     } catch (error) {
       if (this.isUniqueConstraintError(error)) {
         const album = await albumRepository.findBySpotifyId(normalizedSpotifyId);
