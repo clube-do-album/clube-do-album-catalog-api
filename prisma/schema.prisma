@@ -4,12 +4,12 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  url      = env("DATABASE_URL")
+  url = env("DATABASE_URL")
 }
 
 model Album {
   id          String      @id @default(uuid())
-  spotifyId  String      @unique @map("spotify_id")
+  spotifyId   String      @unique @map("spotify_id")
   name        String
   imageUrl    String?     @map("image_url")
   releaseDate String?     @map("release_date")
