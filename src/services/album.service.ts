@@ -8,8 +8,10 @@ const albumRepository = new AlbumRepository();
 const spotifyService = new SpotifyService();
 
 export class AlbumService {
-  listAlbums() {
-    return albumRepository.findAll();
+  async listAlbums() {
+    const albums = await albumRepository.findAll();
+
+    return albums.map((album) => this.formatAlbumSummary(album));
   }
 
   async getAlbumById(id: string) {
@@ -103,6 +105,23 @@ export class AlbumService {
         trackNumber: track.trackNumber,
         durationMs: track.durationMs,
         explicit: track.explicit,
+      })),
+    };
+  }
+
+  private formatAlbumSummary(album: Awaited<ReturnType<AlbumRepository['findAll']>>[number]) {
+    return {
+      id: album.id,
+      spotifyId: album.spotifyId,
+      name: album.name,
+      imageUrl: album.imageUrl,
+      releaseDate: album.releaseDate,
+      totalTracks: album.totalTracks,
+      status: album.status,
+      artists: album.artists.map(({ artist }) => ({
+        id: artist.id,
+        spotifyId: artist.spotifyId,
+        name: artist.name,
       })),
     };
   }

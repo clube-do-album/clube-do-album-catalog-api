@@ -43,6 +43,17 @@ export class AlbumRepository {
         releaseDate: true,
         totalTracks: true,
         status: true,
+        artists: {
+          include: {
+            artist: {
+              select: {
+                id: true,
+                spotifyId: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
     });
   }
