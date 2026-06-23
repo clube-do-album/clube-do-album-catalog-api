@@ -4,9 +4,20 @@ import { AlbumService } from '../services/album.service.js';
 
 const albumService = new AlbumService();
 
-export async function listAlbumsController(_request: Request, response: Response) {
+export async function listAlbumsController(request: Request, response: Response) {
   try {
-    const albums = await albumService.listAlbums();
+    const ids = parseIds(request.query.ids);
+
+    if (ids.length > 0) {
+      const albums = await albumService.getAlbumsByIds(ids);
+
+      return response.json(albums);
+    }
+
+    const page = normalizePositiveInt(request.query.page, 1);
+    const limit = normalizePositiveInt(request.query.limit, 24, 100);
+    const query = typeof request.query.query === 'string' ? request.query.query : undefined;
+    const albums = await albumService.listAlbums({ page, limit, query });
 
     return response.json(albums);
   } catch (error) {
@@ -59,4 +70,30 @@ function handleControllerError(error: unknown, response: Response) {
   return response.status(500).json({
     message: 'Internal server error.',
   });
+}
+
+function parseIds(value: unknown) {
+  if (typeof value !== 'string') {
+    return [];
+  }
+
+  return value
+    .split(',')
+    .map((id) => id.trim())
+    .filter(Boolean)
+    .slice(0, 50);
+}
+
+function normalizePositiveInt(value: unknown, fallback: number, max = Number.MAX_SAFE_INTEGER) {
+  if (typeof value !== 'string') {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+
+  if (!Number.isInteger(parsed) || parsed < 1) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
 }

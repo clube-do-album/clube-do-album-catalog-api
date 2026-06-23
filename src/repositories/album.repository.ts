@@ -30,8 +30,21 @@ const albumRelations = {
 };
 
 export class AlbumRepository {
-  findAll() {
+  findAll({
+    query,
+    skip,
+    take,
+  }: {
+    query?: string;
+    skip: number;
+    take: number;
+  }) {
+    const where = this.buildListWhere(query);
+
     return prisma.album.findMany({
+      where,
+      skip,
+      take,
       orderBy: {
         createdAt: 'desc',
       },
@@ -58,9 +71,26 @@ export class AlbumRepository {
     });
   }
 
+  countAll(query?: string) {
+    return prisma.album.count({
+      where: this.buildListWhere(query),
+    });
+  }
+
   findById(id: string) {
     return prisma.album.findUnique({
       where: { id },
+      include: albumRelations,
+    });
+  }
+
+  findByIds(ids: string[]) {
+    return prisma.album.findMany({
+      where: {
+        id: {
+          in: ids,
+        },
+      },
       include: albumRelations,
     });
   }
@@ -160,5 +190,36 @@ export class AlbumRepository {
         name: artistData.name,
       },
     });
+  }
+
+  private buildListWhere(query?: string): Prisma.AlbumWhereInput | undefined {
+    const normalizedQuery = query?.trim();
+
+    if (!normalizedQuery) {
+      return undefined;
+    }
+
+    return {
+      OR: [
+        {
+          name: {
+            contains: normalizedQuery,
+            mode: 'insensitive',
+          },
+        },
+        {
+          artists: {
+            some: {
+              artist: {
+                name: {
+                  contains: normalizedQuery,
+                  mode: 'insensitive',
+                },
+              },
+            },
+          },
+        },
+      ],
+    };
   }
 }

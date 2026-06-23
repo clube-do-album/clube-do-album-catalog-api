@@ -8,10 +8,21 @@ const albumRepository = new AlbumRepository();
 const spotifyService = new SpotifyService();
 
 export class AlbumService {
-  async listAlbums() {
-    const albums = await albumRepository.findAll();
+  async listAlbums({ page, limit, query }: { page: number; limit: number; query?: string }) {
+    const skip = (page - 1) * limit;
+    const [albums, total] = await Promise.all([
+      albumRepository.findAll({ query, skip, take: limit }),
+      albumRepository.countAll(query),
+    ]);
 
-    return albums.map((album) => this.formatAlbumSummary(album));
+    return {
+      items: albums.map((album) => this.formatAlbumSummary(album)),
+      page,
+      limit,
+      total,
+      totalPages: Math.max(1, Math.ceil(total / limit)),
+      hasNextPage: page * limit < total,
+    };
   }
 
   async getAlbumById(id: string) {
@@ -22,6 +33,22 @@ export class AlbumService {
     }
 
     return this.formatAlbumDetails(album);
+  }
+
+  async getAlbumsByIds(ids: string[]) {
+    const uniqueIds = Array.from(new Set(ids.map((id) => id.trim()).filter(Boolean))).slice(0, 50);
+
+    if (uniqueIds.length === 0) {
+      return [];
+    }
+
+    const albums = await albumRepository.findByIds(uniqueIds);
+    const albumsById = new Map(albums.map((album) => [album.id, album]));
+
+    return uniqueIds
+      .map((id) => albumsById.get(id))
+      .filter((album): album is NonNullable<typeof album> => Boolean(album))
+      .map((album) => this.formatAlbumDetails(album));
   }
 
   searchAlbumsOnSpotify(query: string) {
