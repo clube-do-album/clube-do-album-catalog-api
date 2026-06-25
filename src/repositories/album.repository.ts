@@ -15,13 +15,22 @@ const albumRelations = {
     },
   },
   tracks: {
-    orderBy: {
-      trackNumber: 'asc' as const,
-    },
+    orderBy: [
+      {
+        discNumber: 'asc' as const,
+      },
+      {
+        createdAt: 'asc' as const,
+      },
+      {
+        trackNumber: 'asc' as const,
+      },
+    ],
     select: {
       id: true,
       spotifyId: true,
       name: true,
+      discNumber: true,
       trackNumber: true,
       durationMs: true,
       explicit: true,
@@ -132,6 +141,7 @@ export class AlbumRepository {
             spotifyId: track.spotifyId,
             albumId: album.id,
             name: track.name,
+            discNumber: track.discNumber,
             trackNumber: track.trackNumber,
             durationMs: track.durationMs,
             explicit: track.explicit ?? false,

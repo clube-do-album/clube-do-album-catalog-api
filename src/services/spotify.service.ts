@@ -27,6 +27,7 @@ interface SpotifyAlbumSearchItem {
 interface SpotifyTrackResponse {
   id?: string;
   name: string;
+  disc_number?: number;
   track_number?: number;
   duration_ms?: number;
   explicit?: boolean;
@@ -176,6 +177,7 @@ export class SpotifyService {
     return tracks.map((track) => ({
       spotifyId: track.id,
       name: track.name,
+      discNumber: track.disc_number,
       trackNumber: track.track_number,
       durationMs: track.duration_ms,
       explicit: track.explicit,

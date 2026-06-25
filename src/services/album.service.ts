@@ -129,6 +129,7 @@ export class AlbumService {
         id: track.id,
         spotifyId: track.spotifyId,
         name: track.name,
+        discNumber: track.discNumber,
         trackNumber: track.trackNumber,
         durationMs: track.durationMs,
         explicit: track.explicit,

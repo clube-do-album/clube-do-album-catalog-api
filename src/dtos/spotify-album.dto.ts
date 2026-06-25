@@ -25,6 +25,7 @@ export interface SpotifyArtist {
 export interface SpotifyTrack {
   spotifyId?: string;
   name: string;
+  discNumber?: number;
   trackNumber?: number;
   durationMs?: number;
   explicit?: boolean;

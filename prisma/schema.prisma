@@ -56,6 +56,7 @@ model Track {
   spotifyId   String? @unique @map("spotify_id")
   albumId     String  @map("album_id")
   name        String
+  discNumber  Int?    @map("disc_number")
   trackNumber Int?    @map("track_number")
   durationMs  Int?    @map("duration_ms")
   explicit    Boolean @default(false)
